@@ -15,6 +15,7 @@ type MenuProps = {
   onSplit: () => void;
   joinTracks: () => void;
   deleteTrackSegment: () => void;
+  setIsMovePointActive: (arg: boolean) => void;
 };
 
 const IconMenu: React.FC<MenuProps> = ({
@@ -22,6 +23,7 @@ const IconMenu: React.FC<MenuProps> = ({
   onSplit,
   deleteTrackSegment,
   joinTracks,
+  setIsMovePointActive,
 }) => {
   const handleSplit = () => {
     onSplit();
@@ -37,6 +39,11 @@ const IconMenu: React.FC<MenuProps> = ({
     joinTracks();
     onClose();
   };
+  const handleMovePointClick = () => {
+    alert("Drag the marker to change track direction");
+    setIsMovePointActive(true);
+    onClose();
+  };
 
   return (
     <Dialog open={true} onClose={onClose}>
@@ -50,6 +57,16 @@ const IconMenu: React.FC<MenuProps> = ({
           <CloseIcon />
         </IconButton>
         <MenuList className="mt-10">
+          <MenuItem onClick={handleMovePointClick}>
+            <ListItemIcon>
+              {/* Add an appropriate icon for moving point */}
+              <ContentCut fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Move Point</ListItemText>
+            <Typography variant="body2" color="text.secondary">
+              Move a point in the track
+            </Typography>
+          </MenuItem>
           <MenuItem onClick={handleSplit}>
             <ListItemIcon>
               <ContentCut fontSize="small" />
