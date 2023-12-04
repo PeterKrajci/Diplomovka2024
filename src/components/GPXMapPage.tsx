@@ -5,8 +5,10 @@ import GPXUploader from "./GPXUploader";
 import gpxParser from "gpxparser";
 //import LocationControl from "./LocationControl";
 
+export type Position = [number, number, number];
+
 const GPXMapPage: React.FC = () => {
-  const [gpxPositions, setGpxPositions] = useState([] as unknown);
+  const [gpxPositions, setGpxPositions] = useState<Position[]>();
 
   const handleFileSelect = (selectedFile: Blob | undefined) => {
     if (selectedFile) {
@@ -14,14 +16,12 @@ const GPXMapPage: React.FC = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
         const gpxString = event?.target?.result as string;
-        console.log(gpxString);
         const gpx = new gpxParser();
         gpx.parse(gpxString);
-        const positions = gpx.tracks[0].points.map((p) => {
+        const positions: Position[] = gpx.tracks[0].points.map((p) => {
           return [p.lat, p.lon, p.ele];
         });
-        console.log("positions", positions);
-        setGpxPositions(positions as unknown);
+        setGpxPositions(positions);
       };
       reader.readAsText(selectedFile);
     }
@@ -31,7 +31,7 @@ const GPXMapPage: React.FC = () => {
       <h1>GPX Uploader</h1>
       <GPXUploader onFileSelect={handleFileSelect} />
       <h1>GPX Map</h1>
-      <GPXMap positions={gpxPositions} />
+      <GPXMap positions={gpxPositions || []} />
       {/* <LocationControl /> */}
     </div>
   );

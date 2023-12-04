@@ -518,7 +518,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
             <AreaChart
               width={800}
               height={200}
-              data={transformedCoordinates[0]}
+              data={transformedCoordinates[clickedSegmentIndex]}
               margin={{
                 top: 10,
                 right: 30,
