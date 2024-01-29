@@ -11,12 +11,12 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-gpx";
 import { useColorGeneration } from "../hooks/useColorGeneration";
 import IconMenu from "./Menu";
-import { ResponsiveContainer, AreaChart, XAxis, YAxis, Area } from "recharts";
 import { Button } from "@mui/material";
 import { FeatureGroup } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
 import Loader from "./Page/elements/Loader";
+import { AltitudeChart } from "./AltitudeChart";
 
 export type GPXData = string;
 
@@ -24,7 +24,6 @@ export type Position = {
   lat: number;
   lon: number;
   ele: number;
-  time: number | null;
 };
 
 export type GPXMapProps = {
@@ -32,7 +31,9 @@ export type GPXMapProps = {
 };
 
 const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
-  const defaultStartLatLng = [48.1486, 17.1077];
+  const defaultStartLatLng = [positions[0][0], positions[0][1]] || [
+    48.1486, 17.1077,
+  ];
   const [tracks, setTracks] = useState([positions]);
   const defaultNumberOfColors = 20;
   const { currentColors } = useColorGeneration({ defaultNumberOfColors });
@@ -156,6 +157,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
   }, [positions]);
 
   function transformCoordinates(coordinates: number[][][]) {
+    console.log("coordinates", coordinates);
     let id = 0;
     return coordinates.map((group) => {
       return group.map((coord) => ({
@@ -425,6 +427,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
   }, [shouldDeletePolyline]);
 
   const transformedCoordinates = transformCoordinates(tracks);
+  console.log("transformedCoordinates", transformedCoordinates);
 
   return (
     <>
@@ -438,7 +441,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
         center={defaultStartLatLng}
         zoom={13}
         style={{
-          height: "500px",
+          height: "650px",
           width: "100%",
           position: "relative",
           zIndex: 0,
@@ -513,50 +516,11 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
       </MapContainer>
       {/*ELEVATIONS CHARTS*/}
       {transformedCoordinates?.[0]?.length > 0 && (
-        <div className="recharts">
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart
-              width={800}
-              height={200}
-              data={transformedCoordinates[clickedSegmentIndex]}
-              margin={{
-                top: 10,
-                right: 30,
-                left: 0,
-                bottom: 0,
-              }}
-              onMouseLeave={(map) => {
-                setNewMarker([]);
-              }}
-              onMouseMove={(e) => {
-                // Response obj
-                const arr = e?.activePayload;
-
-                if (typeof arr !== "undefined") {
-                  // Params
-                  const lat = arr[0].payload.position.lat;
-                  const lon = arr[0].payload.position.lon;
-
-                  // Record
-                  setNewMarker([lat, lon]);
-                }
-              }}
-            >
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Area
-                type="monotone"
-                dataKey="elevation"
-                dot={false}
-                activeDot={true}
-                stroke="#1D8A00"
-                fill="#CBFFBD"
-                legendType="star"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <AltitudeChart
+          clickedSegmentIndex={clickedSegmentIndex}
+          coordinates={transformedCoordinates}
+          setNewMarker={setNewMarker}
+        />
       )}
       {menuVisible ? (
         <div

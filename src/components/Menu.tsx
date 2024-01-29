@@ -6,6 +6,9 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Typography from "@mui/material/Typography";
 import ContentCut from "@mui/icons-material/ContentCut";
+import JoinFullIcon from "@mui/icons-material/JoinFull";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import PanToolIcon from "@mui/icons-material/PanTool";
 import Dialog from "@mui/material/Dialog";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
@@ -59,12 +62,11 @@ const IconMenu: React.FC<MenuProps> = ({
         <MenuList className="mt-10">
           <MenuItem onClick={handleMovePointClick}>
             <ListItemIcon>
-              {/* Add an appropriate icon for moving point */}
-              <ContentCut fontSize="small" />
+              <PanToolIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Move Point</ListItemText>
             <Typography variant="body2" color="text.secondary">
-              Move a point in the track
+              Reposition trackpoint
             </Typography>
           </MenuItem>
           <MenuItem onClick={handleSplit}>
@@ -78,7 +80,7 @@ const IconMenu: React.FC<MenuProps> = ({
           </MenuItem>
           <MenuItem onClick={handleSegmentRemoval}>
             <ListItemIcon>
-              <ContentCut fontSize="small" />
+              <DeleteForeverIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Delete</ListItemText>
             <Typography variant="body2" color="text.secondary">
@@ -87,12 +89,11 @@ const IconMenu: React.FC<MenuProps> = ({
           </MenuItem>
           <MenuItem onClick={handleJoin}>
             <ListItemIcon>
-              {/* Add an appropriate icon for joining tracks */}
-              <ContentCut fontSize="small" />
+              <JoinFullIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Join Tracks</ListItemText>
             <Typography variant="body2" color="text.secondary">
-              Join this track with another
+              Join track with another
             </Typography>
           </MenuItem>
         </MenuList>

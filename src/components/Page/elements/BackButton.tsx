@@ -1,5 +1,7 @@
-import { FC } from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
+import Button from "@mui/material/Button";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 type Props = {
   backButtonRoute?: string;
@@ -7,8 +9,10 @@ type Props = {
 
 export const BackButton: FC<Props> = ({ backButtonRoute = ".." }) => {
   return (
-    <Link className="flex flex-row items-center gap-3" to={backButtonRoute}>
-      {"Go back"}
+    <Link to={backButtonRoute} style={{ textDecoration: "none" }}>
+      <Button variant="outlined" color="primary" startIcon={<ArrowBackIcon />}>
+        {"Go back"}
+      </Button>
     </Link>
   );
 };

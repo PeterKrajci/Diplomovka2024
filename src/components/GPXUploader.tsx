@@ -13,7 +13,7 @@ const GPXUploader: React.FC<GPXUploaderProps> = ({ onFileSelect }) => {
 
   return (
     <div>
-      <input type="file" accept=".gpx" onChange={handleFileChange} />
+      <input type="file" accept=".gpx,.tcx,.fit" onChange={handleFileChange} />
     </div>
   );
 };
