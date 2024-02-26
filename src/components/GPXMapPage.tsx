@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import GPXMap from "./GPXMap";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
@@ -33,7 +33,7 @@ const GPXMapPage: React.FC = () => {
     setLoading(true);
 
     if (document_id) {
-      fetch(`http://127.0.0.1:8000/trackdata/${document_id}`)
+      fetch(`http://localhost:8000/trackdata/${document_id}`)
         .then((response) => response.json())
         .then((data) => {
           setPositions(
@@ -43,7 +43,7 @@ const GPXMapPage: React.FC = () => {
               altitude,
             ])
           );
-          setHeartRates(transformedData.map(([, heart_rate]) => heart_rate));
+          setHeartRates(data.trackpoints.map(({ heart_rate }) => heart_rate));
         })
         .catch((error) => {
           console.error("Error fetching document:", error);
@@ -76,7 +76,7 @@ const GPXMapPage: React.FC = () => {
               </Typography>
             </Box>
           ) : (
-            <GPXMap positions={positions} />
+            <GPXMap positions={positions} heartRates={heartRates} />
           )}
         </Paper>
       </Container>

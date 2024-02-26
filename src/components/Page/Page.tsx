@@ -1,6 +1,8 @@
 import { FC, ReactNode } from "react";
 import { BackButton } from "./elements/BackButton";
 import { cx } from "../../utils/classNames";
+import { Button } from "@mui/material";
+import { useAuth } from "../../context/AuthProvider";
 
 type Props = {
   children: ReactNode;
@@ -19,6 +21,7 @@ export const Page: FC<Props> = ({
   headerContent,
   backButton,
 }) => {
+  const { signOut } = useAuth();
   return (
     <>
       {(title || actions) && (
@@ -38,6 +41,7 @@ export const Page: FC<Props> = ({
                   }
                 />
               )}
+              <Button title="Logout" onClick={signOut} />
               <h1>{"TITLE"}</h1>
             </div>
             {actions && (

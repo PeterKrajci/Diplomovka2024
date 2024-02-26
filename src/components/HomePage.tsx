@@ -11,9 +11,11 @@ import {
   Snackbar,
   Box,
   Paper,
+  Button,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthProvider";
 
 export type Position = [number, number, number];
 
@@ -22,9 +24,13 @@ const HomePage: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/trackdata/")
+    fetch("http://127.0.0.1:8000/trackdata/", {
+      method: "GET",
+      credentials: "include",
+    })
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -40,8 +46,9 @@ const HomePage: React.FC = () => {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      fetch("http://127.0.0.1:8000/upload-file", {
+      fetch("http://localhost:8000/upload-file", {
         method: "POST",
+        credentials: "include",
         body: formData,
       })
         .then((response) => response.json())
@@ -69,6 +76,7 @@ const HomePage: React.FC = () => {
     event.stopPropagation();
     fetch(`http://127.0.0.1:8000/trackdata/${documentId}`, {
       method: "DELETE",
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -96,6 +104,9 @@ const HomePage: React.FC = () => {
       </Typography>
       <Box display="flex">
         <Box flex={1} mr={2}>
+          <Button title="Logout" onClick={signOut}>
+            Log out
+          </Button>
           <Paper elevation={3} style={{ padding: "16px" }}>
             <GPXUploader onFileSelect={handleFileSelect} />
           </Paper>

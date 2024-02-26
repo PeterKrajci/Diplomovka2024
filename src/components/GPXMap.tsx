@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -17,6 +17,7 @@ import { EditControl } from "react-leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
 import Loader from "./Page/elements/Loader";
 import { AltitudeChart } from "./AltitudeChart";
+import { HeartRateChart } from "./HeartRateChart";
 
 export type GPXData = string;
 
@@ -28,9 +29,10 @@ export type Position = {
 
 export type GPXMapProps = {
   positions: Array<Position>;
+  heartRates: Array<number>;
 };
 
-const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
+const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
   const defaultStartLatLng = [positions[0][0], positions[0][1]] || [
     48.1486, 17.1077,
   ];
@@ -156,20 +158,19 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
     setTracks([positions]);
   }, [positions]);
 
-  function transformCoordinates(coordinates: number[][][]) {
-    console.log("coordinates", coordinates);
+  const transformCoordinates = (coordinates: number[][][]) => {
     let id = 0;
-    return coordinates.map((group) => {
-      return group.map((coord) => ({
+    return coordinates.map((group) =>
+      group.map((coord) => ({
         id: id++,
         elevation: coord[2],
         position: {
           lat: coord[0],
           lon: coord[1],
         },
-      }));
-    });
-  }
+      }))
+    );
+  };
 
   const joinTracks = () => {
     if (clickedSegmentIndex >= 0) {
@@ -426,8 +427,10 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
     }
   }, [shouldDeletePolyline]);
 
-  const transformedCoordinates = transformCoordinates(tracks);
-  console.log("transformedCoordinates", transformedCoordinates);
+  const transformedCoordinates = useMemo(
+    () => transformCoordinates(tracks),
+    [tracks]
+  );
 
   return (
     <>
@@ -517,6 +520,14 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [] }) => {
       {/*ELEVATIONS CHARTS*/}
       {transformedCoordinates?.[0]?.length > 0 && (
         <AltitudeChart
+          clickedSegmentIndex={clickedSegmentIndex}
+          coordinates={transformedCoordinates}
+          setNewMarker={setNewMarker}
+        />
+      )}
+      {transformedCoordinates?.[0]?.length > 0 && heartRates.length > 0 && (
+        <HeartRateChart
+          heartRates={heartRates}
           clickedSegmentIndex={clickedSegmentIndex}
           coordinates={transformedCoordinates}
           setNewMarker={setNewMarker}
