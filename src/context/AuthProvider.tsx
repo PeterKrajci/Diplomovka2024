@@ -29,8 +29,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Track loading state
-  console.log("useeer", user);
+  const [isLoading, setIsLoading] = useState(true);
 
   const signIn = async (username: string, password: string): Promise<void> => {
     const formData = new URLSearchParams();

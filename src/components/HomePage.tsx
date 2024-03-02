@@ -33,7 +33,6 @@ const HomePage: React.FC = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setDocuments(data);
       })
       .catch((error) => {
@@ -53,7 +52,6 @@ const HomePage: React.FC = () => {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data.message);
           setSnackbarMessage("File uploaded successfully");
           setSnackbarOpen(true);
           // Update UI or perform other actions as needed

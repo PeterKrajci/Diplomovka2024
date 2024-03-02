@@ -18,6 +18,7 @@ import "leaflet-draw/dist/leaflet.draw.css";
 import Loader from "./Page/elements/Loader";
 import { AltitudeChart } from "./AltitudeChart";
 import { HeartRateChart } from "./HeartRateChart";
+import GPXExporter from "./GPXExporter";
 
 export type GPXData = string;
 
@@ -238,31 +239,28 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
     // Prevent the event from propagating to the map click event
     e.originalEvent.stopPropagation();
     const clickLatLng = e.latlng;
-    let trackSegmentClicked = false;
-    let point = [-1, -1, -1];
     let miniIndex = -1;
+    let closestPoint = [-1, -1, -1];
+    let closestDistance = Number.MAX_VALUE;
+
     for (let i = 0; i < tracks.length; i++) {
       const segment = tracks[i] || [];
       for (let j = 0; j < segment.length; j++) {
-        point = segment?.[j];
-        const distance = clickLatLng.distanceTo(point);
-        if (distance < 50) {
-          //setClickedSegmentIndex(i);
+        const currentPoint = segment[j];
+        const distance = clickLatLng.distanceTo(currentPoint);
+        if (distance < 50 && distance < closestDistance) {
+          closestPoint = currentPoint;
           setClickedSegment(segment);
+          closestDistance = distance;
           miniIndex = j;
           setIndex(j);
-          trackSegmentClicked = true;
-          break;
         }
-      }
-      if (trackSegmentClicked) {
-        break;
       }
     }
 
     setMovePoint({
-      lat: point[0],
-      lon: point[1],
+      lat: closestPoint[0],
+      lon: closestPoint[1],
       segmentIndex: indexxx,
       poinIndex: miniIndex,
     });
@@ -439,7 +437,10 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
           Cancel moving track
         </Button>
       )}
-      {loading && <Loader />} {/* Display loader when loading is true */}
+
+      <GPXExporter tracks={tracks} />
+
+      {loading && <Loader />}
       <MapContainer
         center={defaultStartLatLng}
         zoom={13}

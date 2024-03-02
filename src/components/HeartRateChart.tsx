@@ -6,7 +6,6 @@ const transform = (coordinates, heartRates) => {
   let id = 0;
   return coordinates.map((group, groupIndex) => {
     return group.map((coord, coordIndex) => {
-      console.log("coord", coord.position.lat);
       return {
         id: id++,
         heartRate: heartRates[coordIndex],
@@ -29,8 +28,7 @@ export const HeartRateChart = ({
     () => transform(coordinates, heartRates),
     [coordinates, heartRates]
   );
-  console.log("kokot", trasnformedCoordinates);
-  console.log("coordinates", coordinates);
+
   return trasnformedCoordinates ? (
     <div className="recharts">
       <ResponsiveContainer width="100%" height={200}>
