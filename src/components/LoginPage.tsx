@@ -26,6 +26,10 @@ const LoginPage = () => {
     }
   };
 
+  const handleSignUpRedirect = () => {
+    navigate("/signup"); // Assuming "/signup" is the path to your SignUp page
+  };
+
   return (
     <Container maxWidth="xs">
       <Box
@@ -76,6 +80,14 @@ const LoginPage = () => {
             sx={{ mt: 3, mb: 2 }}
           >
             Sign In
+          </Button>
+          <Button
+            fullWidth
+            variant="text"
+            sx={{ mt: 1 }}
+            onClick={handleSignUpRedirect}
+          >
+            Sign up to create account
           </Button>
         </Box>
       </Box>

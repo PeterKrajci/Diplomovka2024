@@ -27,7 +27,7 @@ const HomePage: React.FC = () => {
   const { signOut } = useAuth();
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/trackdata/", {
+    fetch("http://localhost:8000/trackdata/mine", {
       method: "GET",
       credentials: "include",
     })
@@ -54,13 +54,13 @@ const HomePage: React.FC = () => {
         .then((data) => {
           setSnackbarMessage("File uploaded successfully");
           setSnackbarOpen(true);
-          // Update UI or perform other actions as needed
+
+          window.location.reload();
         })
         .catch((error) => {
           console.error("Error:", error);
           setSnackbarMessage("Error uploading file");
           setSnackbarOpen(true);
-          // Handle error, display error message, etc.
         });
     } else {
       console.error("No file selected");

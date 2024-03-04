@@ -29,7 +29,6 @@ const GPXExporter: React.FC<Props> = ({ tracks }) => {
 
       const trackpointElements = track
         .map((point) => {
-          console.log("latitude", point);
           return `<trkpt lat="${point[0]}" lon="${point[1]}">
             <ele>${point[2]}</ele>
           </trkpt>`;
