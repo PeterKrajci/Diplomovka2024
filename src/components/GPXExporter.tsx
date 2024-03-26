@@ -1,62 +1,59 @@
 import React from "react";
+import JSZip from "jszip";
+import { Button } from "@mui/material";
+import { saveAs } from "file-saver";
 
-interface TrackPoint {
-  latitude: number;
-  longitude: number;
-  elevation: number;
-}
+type TrackPoint = [number, number, number];
 
-interface Track {
-  trackpoints: TrackPoint[];
-}
+type Track = [TrackPoint[]];
 
 interface Props {
   tracks: Track[];
 }
 
+const toGPXString = (trackpoints: TrackPoint[]) => {
+  const gpxHeader = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="YourAppName" version="1.1">
+<trk>
+  <name>Track</name>
+  <trkseg>
+`;
+  const gpxFooter = `    </trkseg>
+</trk>
+</gpx>`;
+
+  const trackpointElements = trackpoints
+    ?.map((point) => {
+      return `      <trkpt lat="${point[0]}" lon="${point[1]}">
+      <ele>${point[2]}</ele>
+    </trkpt>`;
+    })
+    .join("\n");
+  console.log("trackpointElements", trackpointElements);
+  console.log("trackpoints", trackpoints);
+  return gpxHeader + trackpointElements + gpxFooter;
+};
+
 const GPXExporter: React.FC<Props> = ({ tracks }) => {
   const exportAllGPX = () => {
-    const toGPXString = (track: any) => {
-      const gpxHeader = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-      <gpx xmlns="http://www.topografix.com/GPX/1/1">
-        <trk>
-          <name>Track</name>
-          <trkseg>
-      `;
-      const gpxFooter = `          </trkseg>
-        </trk>
-      </gpx>`;
-
-      const trackpointElements = track
-        .map((point) => {
-          return `<trkpt lat="${point[0]}" lon="${point[1]}">
-            <ele>${point[2]}</ele>
-          </trkpt>`;
-        })
-        .join("\n");
-
-      return gpxHeader + trackpointElements + gpxFooter;
-    };
+    const zip = new JSZip();
+    console.log("tracks", tracks);
 
     tracks.forEach((track, index) => {
+      console.log("track", track);
       const gpxString = toGPXString(track);
-      const blob = new Blob([gpxString], { type: "text/xml" });
-      const url = URL.createObjectURL(blob);
+      zip.file(`track_${index}.gpx`, gpxString);
+    });
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `track_${index}.gpx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, "tracks.zip");
     });
   };
 
   return (
-    <div>
-      <button onClick={exportAllGPX}>Export All Tracks as GPX</button>
-    </div>
+    <Button variant="contained" color="primary" onClick={exportAllGPX}>
+      Export All Tracks as GPX
+    </Button>
   );
 };
 

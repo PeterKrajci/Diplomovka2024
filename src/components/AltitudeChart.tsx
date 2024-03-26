@@ -1,3 +1,11 @@
+// Function to calculate the min and max elevation
+const calculateYAxisDomain = (data) => {
+  const elevations = data.map((coord) => coord.elevation);
+  const maxElevation = Math.ceil(Math.max(...elevations));
+  const minElevation = Math.floor(Math.min(...elevations));
+  return [minElevation, maxElevation];
+};
+
 import { ResponsiveContainer, AreaChart, XAxis, YAxis, Area } from "recharts";
 import Loader from "./Page/elements/Loader";
 
@@ -6,40 +14,39 @@ export const AltitudeChart = ({
   clickedSegmentIndex,
   setNewMarker,
 }) => {
+  // Ensure there is data to calculate the domain
+  const segmentData =
+    coordinates &&
+    coordinates[clickedSegmentIndex === -1 ? 0 : clickedSegmentIndex];
+  const yAxisDomain = segmentData ? calculateYAxisDomain(segmentData) : [0, 1]; // Default domain if no data
+
   return coordinates ? (
     <div className="recharts">
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart
           width={800}
           height={200}
-          data={
-            coordinates[clickedSegmentIndex == -1 ? 0 : clickedSegmentIndex]
-          }
+          data={segmentData}
           margin={{
             top: 10,
             right: 30,
             left: 0,
             bottom: 0,
           }}
-          onMouseLeave={(map) => {
+          onMouseLeave={() => {
             setNewMarker([]);
           }}
           onMouseMove={(e) => {
-            // Response obj
             const arr = e?.activePayload;
-
             if (typeof arr !== "undefined") {
-              // Params
               const lat = arr[0].payload.position.lat;
               const lon = arr[0].payload.position.lon;
-
-              // Record
               setNewMarker([lat, lon]);
             }
           }}
         >
           <XAxis dataKey="name" />
-          <YAxis />
+          <YAxis domain={yAxisDomain} />
           <Area
             type="monotone"
             dataKey="elevation"
@@ -47,7 +54,6 @@ export const AltitudeChart = ({
             activeDot={true}
             stroke="#1D8A00"
             fill="#CBFFBD"
-            legendType="star"
           />
         </AreaChart>
       </ResponsiveContainer>

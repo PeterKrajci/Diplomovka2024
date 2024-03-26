@@ -11,7 +11,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-gpx";
 import { useColorGeneration } from "../hooks/useColorGeneration";
 import IconMenu from "./Menu";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { FeatureGroup } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -38,6 +38,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
     48.1486, 17.1077,
   ];
   const [tracks, setTracks] = useState([positions]);
+  console.log("tracks", tracks);
   const defaultNumberOfColors = 20;
   const { currentColors } = useColorGeneration({ defaultNumberOfColors });
   const [newMarker, setNewMarker] = useState([]);
@@ -197,6 +198,9 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
 
     const firstSegment = clickedSegment.slice(0, index + 1);
     const secondSegment = clickedSegment.slice(index);
+
+    console.log("firstSegment", firstSegment);
+    console.log("secondSegment", secondSegment);
 
     if (firstSegment.length > 0 && secondSegment.length > 0) {
       // Create a new array for the updated tracks
@@ -438,7 +442,9 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
         </Button>
       )}
 
-      <GPXExporter tracks={tracks} />
+      <Box display="flex" alignItems="flex-end" mb={2}>
+        <GPXExporter tracks={tracks} />
+      </Box>
 
       {loading && <Loader />}
       <MapContainer
@@ -455,31 +461,36 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {tracks?.length && tracks?.[0]?.length
-          ? tracks.map((track, index) => (
+        {tracks.map((track, index) => {
+          if (track.length === 1) {
+            // It's a single point, render a Marker
+            const [lat, lon] = track[0];
+            return (
+              <Marker key={`marker-${index}`} position={{ lat, lng: lon }}>
+                <Tooltip>Point {index}</Tooltip>
+              </Marker>
+            );
+          } else if (track.length > 1) {
+            // It's a series of points, render a Polyline
+            return (
               <Polyline
                 key={`track-${index}`}
                 pathOptions={{
-                  fillColor: "red",
-                  color:
-                    disabledPolyline === index
-                      ? "grey"
-                      : `rgb(${currentColors[index]?.r},${currentColors[index]?.g},${currentColors[index]?.b})`,
+                  color: `rgb(${currentColors[index]?.r},${currentColors[index]?.g},${currentColors[index]?.b})`,
                   weight:
                     hoveredPolyline === index ? colorWeight + 3 : colorWeight,
                 }}
                 positions={track}
                 eventHandlers={{
-                  click: (event) =>
-                    disabledPolyline === index
-                      ? null
-                      : handlePolylineClick(event, index),
+                  click: (event) => handlePolylineClick(event, index),
                   mouseover: () => handlePolylineHover(index),
                   mouseout: handlePolylineLeave,
                 }}
               />
-            ))
-          : null}
+            );
+          }
+          return null; // For TypeScript's sake, though this case shouldn't occur.
+        })}
         {isMovePointActive && (
           <Marker
             position={{ lat: movePoint.lat, lng: movePoint.lon }}

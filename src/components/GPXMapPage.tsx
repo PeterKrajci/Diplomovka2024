@@ -8,6 +8,7 @@ import { BackButton } from "./Page/elements/BackButton";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import OverallData from "./OverallData";
 
 const theme = createTheme({
   palette: {
@@ -26,6 +27,10 @@ const GPXMapPage: React.FC = () => {
   const location = useLocation();
   const [positions, setPositions] = useState<Position[]>([]);
   const [heartRates, setHeartRates] = useState<Position[]>([]);
+  const [overalData, setOveralData] = useState({
+    totalTime: null,
+    totalDistance: null,
+  });
   const [loading, setLoading] = useState(true);
   const { document_id } = useParams();
 
@@ -43,7 +48,13 @@ const GPXMapPage: React.FC = () => {
               altitude,
             ])
           );
-          setHeartRates(data.trackpoints.map(({ heart_rate }) => heart_rate));
+          if (data?.trackpoints[0]?.heart_rate) {
+            setHeartRates(data.trackpoints.map(({ heart_rate }) => heart_rate));
+          }
+          setOveralData({
+            totalDistance: data.total_distance,
+            totalTime: data.total_time,
+          });
         })
         .catch((error) => {
           console.error("Error fetching document:", error);
@@ -76,7 +87,10 @@ const GPXMapPage: React.FC = () => {
               </Typography>
             </Box>
           ) : (
-            <GPXMap positions={positions} heartRates={heartRates} />
+            <>
+              <OverallData overallData={overalData} />
+              <GPXMap positions={positions} heartRates={heartRates} />
+            </>
           )}
         </Paper>
       </Container>

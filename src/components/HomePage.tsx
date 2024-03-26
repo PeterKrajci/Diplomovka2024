@@ -100,56 +100,46 @@ const HomePage: React.FC = () => {
       <Typography variant="h3" gutterBottom>
         GPX Uploader
       </Typography>
-      <Box display="flex">
-        <Box flex={1} mr={2}>
-          <Button title="Logout" onClick={signOut}>
-            Log out
-          </Button>
-          <Paper elevation={3} style={{ padding: "16px" }}>
-            <GPXUploader onFileSelect={handleFileSelect} />
-          </Paper>
-        </Box>
-        <Box flex={1}>
-          <Paper
-            elevation={3}
-            style={{
-              padding: "12px",
-              width: "300px",
-              maxHeight: "400px",
-              overflowY: "auto",
-            }}
-          >
-            <List>
-              {documents.map((document) => (
-                <ListItem
-                  key={document.id}
-                  sx={{
-                    borderBottom: 1,
-                    borderColor: "grey.300",
-                    transition: "box-shadow 0.3s",
-                    "&:hover": {
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                    },
-                  }}
-                  onClick={() => handleListItemClick(document.id)}
-                >
-                  <ListItemText primary={`Track-${document.id}`} />
-                  <ListItemIcon>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={(event) =>
-                        handleDeleteDocument(document.id, event)
-                      }
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemIcon>
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-        </Box>
+      <Box display="flex" flexDirection="column">
+        <Button
+          title="Logout"
+          onClick={signOut}
+          sx={{ alignSelf: "flex-start", mb: 2 }}
+        >
+          Log out
+        </Button>
+        <Paper elevation={3} sx={{ mb: 2, p: 2 }}>
+          <GPXUploader onFileSelect={handleFileSelect} />
+          <List sx={{ mt: 2, width: "100%" }}>
+            {documents.map((document) => (
+              <ListItem
+                key={document.id}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: "grey.300",
+                  transition: "box-shadow 0.3s",
+                  "&:hover": {
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                  },
+                }}
+                onClick={() => handleListItemClick(document.id)}
+              >
+                <ListItemText primary={`Track-${document.id}`} />
+                <ListItemIcon>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={(event) =>
+                      handleDeleteDocument(document.id, event)
+                    }
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemIcon>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
       </Box>
       <Snackbar
         open={snackbarOpen}
