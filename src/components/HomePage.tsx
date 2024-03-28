@@ -111,7 +111,7 @@ const HomePage: React.FC = () => {
         <Paper elevation={3} sx={{ mb: 2, p: 2 }}>
           <GPXUploader onFileSelect={handleFileSelect} />
           <List sx={{ mt: 2, width: "100%" }}>
-            {documents.map((document) => (
+            {documents?.map((document) => (
               <ListItem
                 key={document.id}
                 sx={{

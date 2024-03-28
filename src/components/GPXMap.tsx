@@ -87,73 +87,77 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
     const newLocation = e.target.getLatLng();
     const draggedFromTrackIndex = movePoint.segmentIndex;
 
-    // Get the track from which the marker was dragged
-    const draggedFromTrack = tracks[draggedFromTrackIndex] || [];
+    if (tracks[draggedFromTrackIndex].length > 1) {
+      // Get the track from which the marker was dragged
+      const draggedFromTrack = tracks[draggedFromTrackIndex] || [];
 
-    // Get the first and last points of the old track
-    const firstPoint = draggedFromTrack[0];
-    const lastPoint = draggedFromTrack[draggedFromTrack.length - 1];
+      // Get the first and last points of the old track
+      const firstPoint = draggedFromTrack[0];
+      const lastPoint = draggedFromTrack[draggedFromTrack.length - 1];
 
-    // Call OpenRouteService API to get a new track
-    const apiKey = "5b3ce3597851110001cf6248a496eac3f113459fa3a3f5453f7a931d";
-    const apiUrl =
-      "https://api.openrouteservice.org/v2/directions/foot-walking/geojson";
+      // Call OpenRouteService API to get a new track
+      const apiKey = "5b3ce3597851110001cf6248a496eac3f113459fa3a3f5453f7a931d";
+      const apiUrl =
+        "https://api.openrouteservice.org/v2/directions/foot-walking/geojson";
 
-    const coordinates = [
-      [firstPoint[1], firstPoint[0]],
-      [newLocation.lng, newLocation.lat],
-      [lastPoint[1], lastPoint[0]],
-    ];
-    const body = JSON.stringify({ coordinates, elevation: true });
+      const coordinates = [
+        [firstPoint[1], firstPoint[0]],
+        [newLocation.lng, newLocation.lat],
+        [lastPoint[1], lastPoint[0]],
+      ];
+      const body = JSON.stringify({ coordinates, elevation: true });
 
-    try {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Accept:
-            "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: body,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // Extract new track coordinates
-        const newTrackCoordinates = data.features[0].geometry.coordinates;
-        const swappedCoordinates = newTrackCoordinates.map((subarray) => {
-          // Swap the first and second elements
-          const [first, second, ...rest] = subarray;
-          return [second, first, ...rest];
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            Accept:
+              "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: body,
         });
 
-        const tmpTracks = tracks;
-        tmpTracks.splice(draggedFromTrackIndex, 1, swappedCoordinates);
+        if (response.ok) {
+          const data = await response.json();
 
-        setTracks(tmpTracks);
-      } else {
-        console.error(
-          "Error fetching route from OpenRouteService:",
-          response.statusText
-        );
+          // Extract new track coordinates
+          const newTrackCoordinates = data.features[0].geometry.coordinates;
+          const swappedCoordinates = newTrackCoordinates.map((subarray) => {
+            // Swap the first and second elements
+            const [first, second, ...rest] = subarray;
+            return [second, first, ...rest];
+          });
+
+          const tmpTracks = tracks;
+          tmpTracks.splice(draggedFromTrackIndex, 1, swappedCoordinates);
+
+          setTracks(tmpTracks);
+        } else {
+          console.error(
+            "Error fetching route from OpenRouteService:",
+            response.statusText
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching route from OpenRouteService:", error);
+      } finally {
+        setLoading(false);
+        setMovePoint({
+          lat: -1,
+          lon: -1,
+          segmentIndex: -1,
+          poinIndex: -1,
+        });
       }
-    } catch (error) {
-      console.error("Error fetching route from OpenRouteService:", error);
-    } finally {
-      setLoading(false);
-      setMovePoint({
-        lat: -1,
-        lon: -1,
-        segmentIndex: -1,
-        poinIndex: -1,
-      });
-
-      setIsMovePointActive(false); // Reset move point action
+    } else {
+      tracks[draggedFromTrackIndex][0][0] = newLocation.lat;
+      tracks[draggedFromTrackIndex][0][1] = newLocation.lng;
     }
+    setIsMovePointActive(false); // Reset move point action
   };
 
   useEffect(() => {
@@ -176,6 +180,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
 
   const joinTracks = () => {
     if (clickedSegmentIndex >= 0) {
+      console.log("clickedSegmentIndex", clickedSegmentIndex);
       // Disable the clicked polyline
       setDisabledPolyline(clickedSegmentIndex);
       setJoiningTrackIndex(clickedSegmentIndex);
@@ -191,12 +196,99 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
     setMenuVisible(false);
   };
 
+  const handleMarkerClick = async (index: number) => {
+    setClickedSegmentIndex(index);
+    setMovePoint({
+      lat: tracks[index][0][0],
+      lon: tracks[index][0][1],
+      segmentIndex: index,
+      poinIndex: 0,
+    });
+    if (joiningTrackIndex >= 0 && index !== joiningTrackIndex) {
+      // Assuming tracks[joiningTrackIndex] is the track to join with the clicked marker's track
+      const firstPoint =
+        tracks[joiningTrackIndex]?.[tracks[joiningTrackIndex].length - 1];
+      const secondPoint = tracks[index]?.[0]; // Since it's a marker, it represents a track with a single point
+
+      if (firstPoint && secondPoint) {
+        const apiKey =
+          "5b3ce3597851110001cf6248a496eac3f113459fa3a3f5453f7a931d";
+        const apiUrl =
+          "https://api.openrouteservice.org/v2/directions/foot-walking/geojson";
+
+        const coordinates = [
+          [firstPoint[1], firstPoint[0]], // Swap lat and lon for the API call
+          [secondPoint[1], secondPoint[0]],
+        ];
+        const body = JSON.stringify({ coordinates, elevation: true });
+
+        try {
+          setLoading(true);
+
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              Accept:
+                "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
+              "Content-Type": "application/json",
+              Authorization: apiKey,
+            },
+            body: body,
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Extract new track coordinates and integrate them into the current tracks
+            const newTrackCoordinates = data.features[0].geometry.coordinates;
+            const swappedCoordinates = newTrackCoordinates.map((subarray) => [
+              subarray[1],
+              subarray[0],
+              ...subarray.slice(2),
+            ]);
+
+            // Join the current track with the new path to the clicked marker's track
+            const extendedTrack = [
+              ...tracks[joiningTrackIndex],
+              ...swappedCoordinates,
+              secondPoint,
+            ];
+            const updatedTracks = tracks.filter(
+              (_, idx) => idx !== joiningTrackIndex && idx !== index
+            );
+            updatedTracks.push(extendedTrack);
+
+            setTracks(updatedTracks);
+          } else {
+            console.error(
+              "Error fetching route from OpenRouteService:",
+              response.statusText
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching route from OpenRouteService:", error);
+        } finally {
+          setLoading(false);
+          resetJoiningState();
+        }
+      }
+    } else {
+      setMenuVisible(true);
+    }
+  };
+
+  const resetJoiningState = () => {
+    setDisabledPolyline(-2); // Reset or adjust based on your state management
+    setClickedSegmentIndex(-1);
+    setMenuVisible(false);
+    setJoiningTrackIndex(-1); // Reset the index used for joining tracks
+  };
+
   const handleSplitTrack = () => {
     if (clickedSegment.length <= 1 || index < 0) {
       return; // Do not split if there's only one point
     }
 
-    const firstSegment = clickedSegment.slice(0, index + 1);
+    const firstSegment = clickedSegment.slice(0, index);
     const secondSegment = clickedSegment.slice(index);
 
     console.log("firstSegment", firstSegment);
@@ -402,6 +494,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
 
             setTracks((prevTracks) => [...prevTracks, swappedCoordinates]);
           } else {
+            setTracks((prevTracks) => [...prevTracks, drawnPolyline]);
             console.error(
               "Error fetching route from OpenRouteService:",
               response.statusText
@@ -466,7 +559,13 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
             // It's a single point, render a Marker
             const [lat, lon] = track[0];
             return (
-              <Marker key={`marker-${index}`} position={{ lat, lng: lon }}>
+              <Marker
+                key={`marker-${index}`}
+                position={{ lat, lng: lon }}
+                eventHandlers={{
+                  click: () => handleMarkerClick(index),
+                }}
+              >
                 <Tooltip>Point {index}</Tooltip>
               </Marker>
             );
@@ -476,20 +575,26 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
               <Polyline
                 key={`track-${index}`}
                 pathOptions={{
-                  color: `rgb(${currentColors[index]?.r},${currentColors[index]?.g},${currentColors[index]?.b})`,
+                  color:
+                    disabledPolyline === index
+                      ? "grey"
+                      : `rgb(${currentColors[index]?.r},${currentColors[index]?.g},${currentColors[index]?.b})`,
                   weight:
                     hoveredPolyline === index ? colorWeight + 3 : colorWeight,
                 }}
                 positions={track}
                 eventHandlers={{
-                  click: (event) => handlePolylineClick(event, index),
+                  click: (event) =>
+                    disabledPolyline === index
+                      ? null
+                      : handlePolylineClick(event, index),
                   mouseover: () => handlePolylineHover(index),
                   mouseout: handlePolylineLeave,
                 }}
               />
             );
           }
-          return null; // For TypeScript's sake, though this case shouldn't occur.
+          return null;
         })}
         {isMovePointActive && (
           <Marker
