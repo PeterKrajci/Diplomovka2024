@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GPXMap from "./GPXMap";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
@@ -32,38 +32,79 @@ const GPXMapPage: React.FC = () => {
     totalDistance: null,
   });
   const [loading, setLoading] = useState(true);
-  const { document_id } = useParams();
+  //const { document_id } = useParams();
+  const { ids } = location.state as { ids: number[] };
 
   useEffect(() => {
     setLoading(true);
 
-    if (document_id) {
-      fetch(`http://localhost:8000/trackdata/${document_id}`)
+    // if (document_id) {
+    //   fetch(`http://localhost:8000/trackdata/${document_id}`)
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       setPositions(
+    //         data.trackpoints.map(({ latitude, longitude, altitude }) => [
+    //           latitude,
+    //           longitude,
+    //           altitude,
+    //         ])
+    //       );
+    //       if (data?.trackpoints[0]?.heart_rate) {
+    //         setHeartRates(data.trackpoints.map(({ heart_rate }) => heart_rate));
+    //       }
+    //       setOveralData({
+    //         totalDistance: data.total_distance,
+    //         totalTime: data.total_time,
+    //       });
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error fetching document:", error);
+    //     })
+    //     .finally(() => {
+    //       setLoading(false);
+    //     });
+    // } else {
+    if (ids && ids.length) {
+      fetch("http://127.0.0.1:8000/trackdata/by-ids", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids }),
+      })
         .then((response) => response.json())
         .then((data) => {
-          setPositions(
-            data.trackpoints.map(({ latitude, longitude, altitude }) => [
+          // Assuming 'data' is an array of track objects
+          const newPositions = data.map((track) =>
+            track.trackpoints.map(({ latitude, longitude, altitude }) => [
               latitude,
               longitude,
               altitude,
             ])
           );
-          if (data?.trackpoints[0]?.heart_rate) {
-            setHeartRates(data.trackpoints.map(({ heart_rate }) => heart_rate));
-          }
-          setOveralData({
-            totalDistance: data.total_distance,
-            totalTime: data.total_time,
-          });
+          console.log("newPositions", newPositions);
+          // Map to each track's heart rates; filter out undefined heart rates per point if necessary
+          const newHeartRates = data.map((track) =>
+            track.trackpoints
+              .map(({ heart_rate }) => heart_rate)
+              .filter((hr) => hr !== undefined)
+          );
+          // Accumulate overall data for each track
+          const newOverallData = data.map((track) => ({
+            totalTime: track.total_time,
+            totalDistance: track.total_distance,
+          }));
+
+          setPositions(newPositions);
+          setHeartRates(newHeartRates);
+          setOveralData(newOverallData); // Now it's clearer that we're setting an array representing each track's overall data
         })
         .catch((error) => {
-          console.error("Error fetching document:", error);
+          console.error("Error fetching tracks:", error);
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        .finally(() => setLoading(false));
     }
-  }, [document_id, location.state]);
+  }, [ids, location.state]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -79,7 +120,7 @@ const GPXMapPage: React.FC = () => {
           >
             GPS Activity Manager
           </Typography>
-          {loading && positions ? (
+          {loading || positions.length == 0 ? (
             <Box textAlign="center">
               <CircularProgress size={80} thickness={4} />
               <Typography variant="h6" color="textSecondary" mt={2}>

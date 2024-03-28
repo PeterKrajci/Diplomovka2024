@@ -33,8 +33,7 @@ function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Home />} />
-              <Route path="/gpxmap/:document_id" element={<GPXMapPage />} />
-              <Route path="/gpxmap" element={<NotFoundPage />} />
+              <Route path="/gpxmap" element={<GPXMapPage />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />

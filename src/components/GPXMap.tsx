@@ -22,11 +22,7 @@ import GPXExporter from "./GPXExporter";
 
 export type GPXData = string;
 
-export type Position = {
-  lat: number;
-  lon: number;
-  ele: number;
-};
+export type Position = [number, number, number];
 
 export type GPXMapProps = {
   positions: Array<Position>;
@@ -34,11 +30,11 @@ export type GPXMapProps = {
 };
 
 const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
-  const defaultStartLatLng = [positions[0][0], positions[0][1]] || [
+  const defaultStartLatLng = [positions[0][0][0], positions[0][0][1]] || [
     48.1486, 17.1077,
   ];
-  const [tracks, setTracks] = useState([positions]);
-  console.log("tracks", tracks);
+
+  const [tracks, setTracks] = useState(positions);
   const defaultNumberOfColors = 20;
   const { currentColors } = useColorGeneration({ defaultNumberOfColors });
   const [newMarker, setNewMarker] = useState([]);
@@ -161,7 +157,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
   };
 
   useEffect(() => {
-    setTracks([positions]);
+    setTracks(positions);
   }, [positions]);
 
   const transformCoordinates = (coordinates: number[][][]) => {
@@ -558,6 +554,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
           if (track.length === 1) {
             // It's a single point, render a Marker
             const [lat, lon] = track[0];
+
             return (
               <Marker
                 key={`marker-${index}`}
@@ -570,7 +567,6 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
               </Marker>
             );
           } else if (track.length > 1) {
-            // It's a series of points, render a Polyline
             return (
               <Polyline
                 key={`track-${index}`}

@@ -12,6 +12,7 @@ import {
   Box,
   Paper,
   Button,
+  Checkbox,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +26,35 @@ const HomePage: React.FC = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [selectedTracks, setSelectedTracks] = useState<number[]>([]); // New state for selected track IDs
 
+  const toggleSelectTrack = (id: number) => {
+    setSelectedTracks((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((prevId) => prevId !== id)
+        : [...prevSelected, id]
+    );
+  };
+
+  // Handler for ListItem click that toggles selection
+  const handleListItemClick = (event: React.MouseEvent, id: number) => {
+    event.preventDefault(); // Prevents the ListItem from capturing the click event when clicking the Checkbox
+    toggleSelectTrack(id);
+  };
+
+  // This handler stops the click event from propagating to the ListItem when the Checkbox is clicked
+  const handleCheckboxChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    id: number
+  ) => {
+    event.stopPropagation();
+    toggleSelectTrack(id);
+  };
+
+  const handleSubmitSelectedTracks = () => {
+    // Assuming you're navigating to a component that can handle multiple IDs
+    navigate(`/gpxmap/`, { state: { ids: selectedTracks } });
+  };
   useEffect(() => {
     fetch("http://localhost:8000/trackdata/mine", {
       method: "GET",
@@ -91,9 +120,9 @@ const HomePage: React.FC = () => {
       });
   };
 
-  const handleListItemClick = (documentId: string) => {
-    navigate(`/gpxmap/${documentId}`);
-  };
+  // const handleListItemClick = (documentId: string) => {
+  //   navigate(`/gpxmap/${documentId}`);
+  // };
 
   return (
     <Container>
@@ -111,7 +140,7 @@ const HomePage: React.FC = () => {
         <Paper elevation={3} sx={{ mb: 2, p: 2 }}>
           <GPXUploader onFileSelect={handleFileSelect} />
           <List sx={{ mt: 2, width: "100%" }}>
-            {documents?.map((document) => (
+            {documents.map((document) => (
               <ListItem
                 key={document.id}
                 sx={{
@@ -121,11 +150,22 @@ const HomePage: React.FC = () => {
                   "&:hover": {
                     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                   },
+                  display: "flex",
+                  justifyContent: "space-between",
                 }}
-                onClick={() => handleListItemClick(document.id)}
+                onClick={(event) => handleListItemClick(event, document.id)}
+                button // Makes the ListItem behave as a button
               >
                 <ListItemText primary={`Track-${document.id}`} />
-                <ListItemIcon>
+                <ListItemIcon onClick={(event) => event.stopPropagation()}>
+                  <Checkbox
+                    edge="end"
+                    checked={selectedTracks.includes(document.id)}
+                    onChange={(event) =>
+                      handleCheckboxChange(event, document.id)
+                    }
+                    onClick={(event) => event.stopPropagation()} // Prevent checkbox click from propagating to the ListItem
+                  />
                   <IconButton
                     edge="end"
                     aria-label="delete"
@@ -139,6 +179,13 @@ const HomePage: React.FC = () => {
               </ListItem>
             ))}
           </List>
+          <Button
+            variant="contained"
+            onClick={handleSubmitSelectedTracks}
+            disabled={!selectedTracks.length}
+          >
+            Submit Selected Tracks
+          </Button>
         </Paper>
       </Box>
       <Snackbar
