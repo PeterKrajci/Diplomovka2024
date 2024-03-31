@@ -1,13 +1,19 @@
+import {
+  ResponsiveContainer,
+  AreaChart,
+  XAxis,
+  YAxis,
+  Area,
+  Tooltip,
+} from "recharts";
+
 // Function to calculate the min and max elevation
 const calculateYAxisDomain = (data) => {
   const elevations = data.map((coord) => coord.elevation);
-  const maxElevation = Math.ceil(Math.max(...elevations));
-  const minElevation = Math.floor(Math.min(...elevations));
+  const maxElevation = Math.ceil(Math.max(...elevations)) + 10; // Adding padding
+  const minElevation = Math.floor(Math.min(...elevations)) - 10; // Adding padding
   return [minElevation, maxElevation];
 };
-
-import { ResponsiveContainer, AreaChart, XAxis, YAxis, Area } from "recharts";
-import Loader from "./Page/elements/Loader";
 
 export const AltitudeChart = ({
   coordinates,
@@ -21,11 +27,9 @@ export const AltitudeChart = ({
   const yAxisDomain = segmentData ? calculateYAxisDomain(segmentData) : [0, 1]; // Default domain if no data
 
   return coordinates ? (
-    <div className="recharts">
-      <ResponsiveContainer width="100%" height={200}>
+    <div style={{ width: "100%", height: 200 }}>
+      <ResponsiveContainer>
         <AreaChart
-          width={800}
-          height={200}
           data={segmentData}
           margin={{
             top: 10,
@@ -45,15 +49,21 @@ export const AltitudeChart = ({
             }
           }}
         >
-          <XAxis dataKey="name" />
+          <defs>
+            <linearGradient id="colorElevation" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#32cd32" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#32cd32" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="id" />
           <YAxis domain={yAxisDomain} />
+          <Tooltip />
           <Area
             type="monotone"
             dataKey="elevation"
-            dot={false}
-            activeDot={true}
-            stroke="#1D8A00"
-            fill="#CBFFBD"
+            stroke="#32cd32"
+            fillOpacity={1}
+            fill="url(#colorElevation)"
           />
         </AreaChart>
       </ResponsiveContainer>

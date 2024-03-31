@@ -29,18 +29,14 @@ const toGPXString = (trackpoints: TrackPoint[]) => {
     </trkpt>`;
     })
     .join("\n");
-  console.log("trackpointElements", trackpointElements);
-  console.log("trackpoints", trackpoints);
   return gpxHeader + trackpointElements + gpxFooter;
 };
 
 const GPXExporter: React.FC<Props> = ({ tracks }) => {
   const exportAllGPX = () => {
     const zip = new JSZip();
-    console.log("tracks", tracks);
 
     tracks.forEach((track, index) => {
-      console.log("track", track);
       const gpxString = toGPXString(track);
       zip.file(`track_${index}.gpx`, gpxString);
     });

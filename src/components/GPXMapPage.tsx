@@ -34,36 +34,12 @@ const GPXMapPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   //const { document_id } = useParams();
   const { ids } = location.state as { ids: number[] };
+  const [isEditing, setIsEditing] = useState(false);
+  const [boldPolylineIndex, setBoldPolylineIndex] = useState(0);
 
   useEffect(() => {
     setLoading(true);
 
-    // if (document_id) {
-    //   fetch(`http://localhost:8000/trackdata/${document_id}`)
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setPositions(
-    //         data.trackpoints.map(({ latitude, longitude, altitude }) => [
-    //           latitude,
-    //           longitude,
-    //           altitude,
-    //         ])
-    //       );
-    //       if (data?.trackpoints[0]?.heart_rate) {
-    //         setHeartRates(data.trackpoints.map(({ heart_rate }) => heart_rate));
-    //       }
-    //       setOveralData({
-    //         totalDistance: data.total_distance,
-    //         totalTime: data.total_time,
-    //       });
-    //     })
-    //     .catch((error) => {
-    //       console.error("Error fetching document:", error);
-    //     })
-    //     .finally(() => {
-    //       setLoading(false);
-    //     });
-    // } else {
     if (ids && ids.length) {
       fetch("http://127.0.0.1:8000/trackdata/by-ids", {
         method: "POST",
@@ -82,14 +58,19 @@ const GPXMapPage: React.FC = () => {
               altitude,
             ])
           );
-          console.log("newPositions", newPositions);
-          // Map to each track's heart rates; filter out undefined heart rates per point if necessary
-          const newHeartRates = data.map((track) =>
-            track.trackpoints
-              .map(({ heart_rate }) => heart_rate)
-              .filter((hr) => hr !== undefined)
-          );
-          // Accumulate overall data for each track
+
+          const newHeartRates = data.map((track) => {
+            if (
+              track?.trackpoints[0]?.heart_rate > -1 &&
+              track?.trackpoints[0]?.heart_rate !== null
+            ) {
+              return track.trackpoints
+                .map(({ heart_rate }) => heart_rate)
+                .filter((hr) => hr !== undefined);
+            }
+            return [];
+          });
+
           const newOverallData = data.map((track) => ({
             totalTime: track.total_time,
             totalDistance: track.total_distance,
@@ -129,8 +110,19 @@ const GPXMapPage: React.FC = () => {
             </Box>
           ) : (
             <>
-              <OverallData overallData={overalData} />
-              <GPXMap positions={positions} heartRates={heartRates} />
+              <OverallData
+                overallData={overalData}
+                isEditing={isEditing}
+                boldPolylineIndex={boldPolylineIndex}
+                onIndexChange={setBoldPolylineIndex}
+              />
+              <GPXMap
+                setIsEditing={setIsEditing}
+                positions={positions}
+                heartRates={heartRates}
+                boldPolylineIndex={boldPolylineIndex}
+                setBoldPolylineIndex={setBoldPolylineIndex}
+              />
             </>
           )}
         </Paper>

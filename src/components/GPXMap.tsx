@@ -27,12 +27,23 @@ export type Position = [number, number, number];
 export type GPXMapProps = {
   positions: Array<Position>;
   heartRates: Array<number>;
+  setIsEditing: (arg: boolean) => void;
+  isEditing: boolean;
+  boldPolylineIndex: number;
+  setBoldPolylineIndex: (arg: number) => void;
 };
 
-const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
-  const defaultStartLatLng = [positions[0][0][0], positions[0][0][1]] || [
-    48.1486, 17.1077,
-  ];
+const GPXMap: React.FC<GPXMapProps> = ({
+  positions = [],
+  heartRates = [],
+  setIsEditing,
+  boldPolylineIndex,
+  setBoldPolylineIndex,
+}) => {
+  const defaultStartLatLng =
+    positions[0][0][0] && positions[0][0][1]
+      ? [positions[0][0][0], positions[0][0][1]]
+      : [48.1486, 17.1077];
 
   const [tracks, setTracks] = useState(positions);
   const defaultNumberOfColors = 20;
@@ -159,6 +170,10 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
   useEffect(() => {
     setTracks(positions);
   }, [positions]);
+  useEffect(() => {
+    handlePolylineHover(boldPolylineIndex);
+    setClickedSegmentIndex(boldPolylineIndex);
+  }, [boldPolylineIndex]);
 
   const transformCoordinates = (coordinates: number[][][]) => {
     let id = 0;
@@ -176,7 +191,6 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
 
   const joinTracks = () => {
     if (clickedSegmentIndex >= 0) {
-      console.log("clickedSegmentIndex", clickedSegmentIndex);
       // Disable the clicked polyline
       setDisabledPolyline(clickedSegmentIndex);
       setJoiningTrackIndex(clickedSegmentIndex);
@@ -286,9 +300,6 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
 
     const firstSegment = clickedSegment.slice(0, index);
     const secondSegment = clickedSegment.slice(index);
-
-    console.log("firstSegment", firstSegment);
-    console.log("secondSegment", secondSegment);
 
     if (firstSegment.length > 0 && secondSegment.length > 0) {
       // Create a new array for the updated tracks
@@ -507,7 +518,6 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
 
     fetchTrack();
   }, [drawnPolyline]);
-
   useEffect(() => {
     if (shouldDeletePolyline && drawnPolylineLayerRef.current) {
       // Remove the drawn polyline layer from the map
@@ -661,6 +671,7 @@ const GPXMap: React.FC<GPXMapProps> = ({ positions = [], heartRates = [] }) => {
             deleteTrackSegment={deleteTrackSegment}
             joinTracks={joinTracks}
             setIsMovePointActive={setIsMovePointActive}
+            setIsEditing={setIsEditing}
           />
         </div>
       ) : null}

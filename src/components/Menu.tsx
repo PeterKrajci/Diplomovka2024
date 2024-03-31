@@ -19,6 +19,7 @@ type MenuProps = {
   joinTracks: () => void;
   deleteTrackSegment: () => void;
   setIsMovePointActive: (arg: boolean) => void;
+  setIsEditing: (arg: boolean) => void;
 };
 
 const IconMenu: React.FC<MenuProps> = ({
@@ -27,23 +28,28 @@ const IconMenu: React.FC<MenuProps> = ({
   deleteTrackSegment,
   joinTracks,
   setIsMovePointActive,
+  setIsEditing,
 }) => {
   const handleSplit = () => {
+    setIsEditing(true);
     onSplit();
     onClose();
   };
 
   const handleSegmentRemoval = () => {
+    setIsEditing(true);
     deleteTrackSegment();
     onClose();
   };
 
   const handleJoin = () => {
+    setIsEditing(true);
     joinTracks();
     onClose();
   };
   const handleMovePointClick = () => {
     alert("Drag the marker to change track direction");
+    setIsEditing(true);
     setIsMovePointActive(true);
     onClose();
   };
