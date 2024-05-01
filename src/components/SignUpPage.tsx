@@ -41,6 +41,7 @@ const SignUpPage = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -56,7 +57,7 @@ const SignUpPage = () => {
         password: formData.password,
       };
 
-      const response = await fetch("http://localhost:8000/signup/", {
+      const response = await fetch(`${backendUrl}/signup/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

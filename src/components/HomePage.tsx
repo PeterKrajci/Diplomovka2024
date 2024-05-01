@@ -26,7 +26,8 @@ const HomePage: React.FC = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const [selectedTracks, setSelectedTracks] = useState<number[]>([]); // New state for selected track IDs
+  const [selectedTracks, setSelectedTracks] = useState<number[]>([]);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const toggleSelectTrack = (id: number) => {
     setSelectedTracks((prevSelected) =>
@@ -36,13 +37,11 @@ const HomePage: React.FC = () => {
     );
   };
 
-  // Handler for ListItem click that toggles selection
   const handleListItemClick = (event: React.MouseEvent, id: number) => {
-    event.preventDefault(); // Prevents the ListItem from capturing the click event when clicking the Checkbox
+    event.preventDefault();
     toggleSelectTrack(id);
   };
 
-  // This handler stops the click event from propagating to the ListItem when the Checkbox is clicked
   const handleCheckboxChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     id: number
@@ -52,11 +51,10 @@ const HomePage: React.FC = () => {
   };
 
   const handleSubmitSelectedTracks = () => {
-    // Assuming you're navigating to a component that can handle multiple IDs
     navigate(`/gpxmap/`, { state: { ids: selectedTracks } });
   };
   useEffect(() => {
-    fetch("http://localhost:8000/trackdata/mine", {
+    fetch(`${backendUrl}/trackdata/mine`, {
       method: "GET",
       credentials: "include",
     })
@@ -74,7 +72,7 @@ const HomePage: React.FC = () => {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      fetch("http://localhost:8000/upload-file", {
+      fetch(`${backendUrl}/upload-file`, {
         method: "POST",
         credentials: "include",
         body: formData,
@@ -101,7 +99,7 @@ const HomePage: React.FC = () => {
     event: React.MouseEvent
   ) => {
     event.stopPropagation();
-    fetch(`http://127.0.0.1:8000/trackdata/${documentId}`, {
+    fetch(`${backendUrl}/trackdata/${documentId}`, {
       method: "DELETE",
       credentials: "include",
     })
@@ -119,10 +117,6 @@ const HomePage: React.FC = () => {
         setSnackbarOpen(true);
       });
   };
-
-  // const handleListItemClick = (documentId: string) => {
-  //   navigate(`/gpxmap/${documentId}`);
-  // };
 
   return (
     <Container>
@@ -164,7 +158,7 @@ const HomePage: React.FC = () => {
                     onChange={(event) =>
                       handleCheckboxChange(event, document.id)
                     }
-                    onClick={(event) => event.stopPropagation()} // Prevent checkbox click from propagating to the ListItem
+                    onClick={(event) => event.stopPropagation()}
                   />
                   <IconButton
                     edge="end"

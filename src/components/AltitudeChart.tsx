@@ -6,14 +6,8 @@ import {
   Area,
   Tooltip,
 } from "recharts";
-
-// Function to calculate the min and max elevation
-const calculateYAxisDomain = (data) => {
-  const elevations = data.map((coord) => coord.elevation);
-  const maxElevation = Math.ceil(Math.max(...elevations)) + 10; // Adding padding
-  const minElevation = Math.floor(Math.min(...elevations)) - 10; // Adding padding
-  return [minElevation, maxElevation];
-};
+import Loader from "./Page/elements/Loader";
+import { calculateYAxisDomain } from "../utils/utils";
 
 export const AltitudeChart = ({
   coordinates,
@@ -24,6 +18,7 @@ export const AltitudeChart = ({
   const segmentData =
     coordinates &&
     coordinates[clickedSegmentIndex === -1 ? 0 : clickedSegmentIndex];
+  console.log("calculateYAxisDomain", segmentData);
   const yAxisDomain = segmentData ? calculateYAxisDomain(segmentData) : [0, 1]; // Default domain if no data
 
   return coordinates ? (

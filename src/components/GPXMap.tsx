@@ -19,6 +19,7 @@ import Loader from "./Page/elements/Loader";
 import { AltitudeChart } from "./AltitudeChart";
 import { HeartRateChart } from "./HeartRateChart";
 import GPXExporter from "./GPXExporter";
+import { transformCoordinates } from "../utils/utils";
 
 export type GPXData = string;
 
@@ -174,20 +175,6 @@ const GPXMap: React.FC<GPXMapProps> = ({
     handlePolylineHover(boldPolylineIndex);
     setClickedSegmentIndex(boldPolylineIndex);
   }, [boldPolylineIndex]);
-
-  const transformCoordinates = (coordinates: number[][][]) => {
-    let id = 0;
-    return coordinates.map((group) =>
-      group.map((coord) => ({
-        id: id++,
-        elevation: coord[2],
-        position: {
-          lat: coord[0],
-          lon: coord[1],
-        },
-      }))
-    );
-  };
 
   const joinTracks = () => {
     if (clickedSegmentIndex >= 0) {
@@ -520,10 +507,8 @@ const GPXMap: React.FC<GPXMapProps> = ({
   }, [drawnPolyline]);
   useEffect(() => {
     if (shouldDeletePolyline && drawnPolylineLayerRef.current) {
-      // Remove the drawn polyline layer from the map
       drawnPolylineLayerRef.current.remove();
 
-      // Reset the state variable
       setShouldDeletePolyline(false);
     }
   }, [shouldDeletePolyline]);

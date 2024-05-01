@@ -36,16 +36,18 @@ const GPXMapPage: React.FC = () => {
   const { ids } = location.state as { ids: number[] };
   const [isEditing, setIsEditing] = useState(false);
   const [boldPolylineIndex, setBoldPolylineIndex] = useState(0);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     setLoading(true);
 
     if (ids && ids.length) {
-      fetch("http://127.0.0.1:8000/trackdata/by-ids", {
+      fetch(`${backendUrl}/trackdata/by-ids`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ ids }),
       })
         .then((response) => response.json())

@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, Paper, Button } from "@mui/material";
+import { formatTime } from "../utils/utils";
 
 // Update the type to expect an array of data objects
 type OverallDataProps = {
@@ -10,18 +11,6 @@ type OverallDataProps = {
   isEditing: boolean;
   onIndexChange: (arg: number) => void;
   boldPolylineIndex: number;
-};
-
-const formatTime = (totalSeconds: number | null): string => {
-  if (totalSeconds === null) return "Not provided";
-
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = Math.round(totalSeconds % 60);
-
-  return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
-    .toString()
-    .padStart(2, "0")} hours`;
 };
 
 const OverallData: React.FC<OverallDataProps> = ({
@@ -58,6 +47,7 @@ const OverallData: React.FC<OverallDataProps> = ({
   };
 
   const { totalTime, totalDistance } = overallData[boldPolylineIndex];
+  console.log("formatTime", totalTime);
 
   return (
     <Paper

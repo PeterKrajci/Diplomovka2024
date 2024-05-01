@@ -30,15 +30,16 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const signIn = async (username: string, password: string): Promise<void> => {
     const formData = new URLSearchParams();
     formData.append("username", username);
     formData.append("password", password);
     try {
-      const response = await fetch("http://localhost:8000/login", {
+      const response = await fetch(`${backendUrl}/login`, {
         method: "POST",
-        credentials: "include", // Required for cookies to be sent and received
+        credentials: "include",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
       });
@@ -52,9 +53,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signOut = async (): Promise<void> => {
     try {
-      await fetch("http://localhost:8000/logout", {
+      await fetch(`${backendUrl}/logout`, {
         method: "POST",
-        credentials: "include", // Required for cookies to be sent and received
+        credentials: "include",
       });
       setUser(null);
     } catch (error) {
@@ -65,7 +66,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const verifyUserSession = async () => {
       try {
-        const response = await fetch("http://localhost:8000/users/me", {
+        const response = await fetch(`${backendUrl}/users/me`, {
           method: "GET",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -84,7 +85,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     verifyUserSession();
-  }, []);
+  }, [backendUrl]);
 
   if (!AuthContext)
     throw new Error("useAuth must be used within an AuthProvider");

@@ -2,6 +2,7 @@ import React from "react";
 import JSZip from "jszip";
 import { Button } from "@mui/material";
 import { saveAs } from "file-saver";
+import { toGPXString } from "../utils/utils";
 
 type TrackPoint = [number, number, number];
 
@@ -11,32 +12,12 @@ interface Props {
   tracks: Track[];
 }
 
-const toGPXString = (trackpoints: TrackPoint[]) => {
-  const gpxHeader = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="YourAppName" version="1.1">
-<trk>
-  <name>Track</name>
-  <trkseg>
-`;
-  const gpxFooter = `    </trkseg>
-</trk>
-</gpx>`;
-
-  const trackpointElements = trackpoints
-    ?.map((point) => {
-      return `      <trkpt lat="${point[0]}" lon="${point[1]}">
-      <ele>${point[2]}</ele>
-    </trkpt>`;
-    })
-    .join("\n");
-  return gpxHeader + trackpointElements + gpxFooter;
-};
-
 const GPXExporter: React.FC<Props> = ({ tracks }) => {
   const exportAllGPX = () => {
     const zip = new JSZip();
 
     tracks.forEach((track, index) => {
+      console.log("toGPXString", track);
       const gpxString = toGPXString(track);
       zip.file(`track_${index}.gpx`, gpxString);
     });
